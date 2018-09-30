@@ -68,6 +68,36 @@ public class Converter {
             Iterator<String[]> iterator = full.iterator();
             
             // INSERT YOUR CODE HERE
+            LinkedHashMap<String,ArrayList> jsonObject = new LinkedHashMap<>();
+            ArrayList<String> columnHeader = new ArrayList<>();
+            ArrayList<String> rowHeader = new ArrayList<>();
+            ArrayList<ArrayList> data = new ArrayList<>();
+  
+            String[] line = iterator.next();
+            
+            for(String field : line){
+                columnHeader.add(field);
+            }
+            while(iterator.hasNext()){
+                line = iterator.next();
+                ArrayList<Integer> row = new ArrayList<>();
+                for(int i = 0; i< line.length; i++){
+                    if(i == 0){
+                        rowHeader.add(line[i]);
+                    }
+                    else{
+                        row.add(Integer.parseInt(line[i]));
+                    }
+                }
+                data.add(row);
+            }
+            jsonObject.put("rowHeaders", rowHeader);
+            jsonObject.put("data", data);
+            jsonObject.put("colHeaders", columnHeader);
+            results = JSONValue.toJSONString(jsonObject);
+            
+            
+            
             
         }        
         catch(Exception e) { return e.toString(); }
@@ -86,6 +116,74 @@ public class Converter {
             CSVWriter csvWriter = new CSVWriter(writer, ',', '"', '\n');
             
             // INSERT YOUR CODE HERE
+            
+            //parse JSON Data to a JSONObject
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject)parser.parse(jsonString);
+            
+            //gets the JSON data from the JSONObject and stores into JSONArrays
+            
+            JSONArray colHeaders = (JSONArray)jsonObject.get("colHeaders");
+            JSONArray rowHeaders = (JSONArray)jsonObject.get("rowHeaders");
+            JSONArray data = (JSONArray)jsonObject.get("data");
+            
+            // create empty csv containers as string arrays
+            // will copy data from JSONArrays into String arrays
+            
+            String[] colStringArray = new String[colHeaders.size()];
+            String[] rowStringArray = new String[rowHeaders.size()];
+            String[] dataStringArray = new String[data.size()];
+            
+            for(int i =0; i < colHeaders.size(); i ++){
+                colStringArray[i] = colHeaders.get(i).toString();
+            }
+            
+            // outputs the column headers to the csv writer
+            
+            csvWriter.writeNext(colStringArray);
+            
+            
+            
+            for(int i = 0; i < rowHeaders.size(); i ++){
+                rowStringArray[i] = rowHeaders.get(i).toString();
+                dataStringArray[i] = data.get(i).toString();
+            }
+            
+            // iterates through the lists of row headers and row data
+            // combine each into a single array of strings
+            
+            for (int i = 0; i < dataStringArray.length; i++){
+                //parses row data into JSON array called "dataValues"
+                JSONArray dataValues = (JSONArray)parser.parse(dataStringArray[i]);
+                //create a row array
+                String[] row = new String[dataValues.size() + 1];
+                
+                row[0] = rowStringArray[i];
+                for(int j = 0; j<dataValues.size(); j++){
+                    row[j + 1] = dataValues.get(j).toString();
+                }
+                csvWriter.writeNext(row);
+                
+                }
+                
+       
+                
+                
+                
+                //insert code here
+                
+                
+                // output it to the csv writer
+                
+                
+            
+            
+            results = writer.toString();
+            
+            
+            
+            
+            
             
         }
         
